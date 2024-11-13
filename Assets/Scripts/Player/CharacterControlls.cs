@@ -15,9 +15,9 @@ public class CharacterControlls : MonoBehaviour
     private SpriteRenderer sp;
     // Variables
     private float xMov, yMov;
-    private bool yStart, yEnd, powerInput, powerOutput, powerChange, lockTarget;
+    private bool yStart, yEnd, powerInput, powerOutput, planePow, lockTarget;
     [SerializeField]
-    private int state, powerSelected;
+    private int state;
     private bool rFace;
     
     private void Awake() {
@@ -33,7 +33,6 @@ public class CharacterControlls : MonoBehaviour
     {
         rFace = true;
         state = 0;
-        powerSelected = 0;
     }
 
     // Update is called once per frame
@@ -57,7 +56,7 @@ public class CharacterControlls : MonoBehaviour
                         yEnd = Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.JoystickButton0);
                         powerInput = Input.GetButtonDown("Power") ;
                         powerOutput = Input.GetButtonUp("Power");
-                        powerChange = Input.GetKeyUp(KeyCode.Tab);
+                        planePow = Input.GetKeyDown(KeyCode.E);
                         lockTarget = Input.GetKey(KeyCode.LeftControl);
 
             //Actions depending on the state
@@ -66,11 +65,13 @@ public class CharacterControlls : MonoBehaviour
                     chMov.HorizontalMov(xMov);
                     chMov.VerticalMov(yStart, yEnd);
                     animateXDir(xMov);
+                    //Normal movement
                     
                 }
                 else if (state == 1){
                     chMov.RotatedMov(xMov, yMov);
                     chMov.Impulse(yStart);
+                    //Movement in plane
                 }
                 else if(state == 2){
                     hook.MovementInHook(xMov);
@@ -79,24 +80,15 @@ public class CharacterControlls : MonoBehaviour
                 }
 
 
-                if(powerSelected == 2){
-                    if(powerInput){
-                        ChangeState(2);
-                    }else if(powerOutput){
-                        ChangeState(0);
-                    }
-                      //Use Hook  
+                if(powerInput){
+                    ChangeState(2);
+                }else if(powerOutput){  //Hook
+                    ChangeState(0);
                 }
-                else if(powerSelected == 1 && powerInput){
-                    ChangeStateButton();
+                   
+                else if(planePow){
+                    ChangeStateButton(); // plane
                 }
-                            //Change power selected (gona be changed)
-                                if(powerChange){
-                                    powerSelected ++;
-                                    if(powerSelected > 2 ){
-                                        powerSelected = 0;
-                                    }
-                                }
 
         }
         
@@ -178,6 +170,7 @@ public class CharacterControlls : MonoBehaviour
             hook.DestroyHook();
             rb2d.freezeRotation = true;
             state = 0;
+            chMov.Grounded();
     }
 
     private void SetBalanceState(){
@@ -200,8 +193,12 @@ public class CharacterControlls : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D other) {
         var layerMask = other.gameObject.layer;
-        if ( (layerMask == 3 || layerMask == 8 )&& state != 0 && state != 2){
-            ChangeState(0);
+        if ( layerMask == 3 || layerMask == 8 ){
+            if(state == 1){
+                ChangeState(0);
+            }else if(state == 2 && other.relativeVelocity.magnitude > 20){
+                ChangeState(0);
+            }
         }
         
     }

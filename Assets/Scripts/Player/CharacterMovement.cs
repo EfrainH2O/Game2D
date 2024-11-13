@@ -45,7 +45,7 @@ public class CharacterMovement : MonoBehaviour
     private void Awake() {
         rb2d = GetComponent<Rigidbody2D>();    
         plyAnimator = GetComponent<PlayerAnimatorController>();
-        groundCheck = this.gameObject.transform.GetChild(0);
+        groundCheck = gameObject.transform.GetChild(0);
     }
 
     void Start()
@@ -110,7 +110,7 @@ public class CharacterMovement : MonoBehaviour
                 jumpCount = 0;
                 isJumping = false;
             }
-            rb2d.velocity += -gravity * Time.deltaTime* jumpAfterForce * proportional;
+            rb2d.velocity -= gravity * Time.deltaTime* jumpAfterForce * proportional;
         }
         if(output){
             isJumping = false;
@@ -138,7 +138,7 @@ public class CharacterMovement : MonoBehaviour
     }
     public void Impulse(bool go){
         if(go && canGo){
-            rb2d.AddForce(jumpForce*transform.right*10, ForceMode2D.Impulse);
+            rb2d.AddForce(jumpForce*transform.right*5, ForceMode2D.Impulse);
         }
     }
     
@@ -146,6 +146,7 @@ public class CharacterMovement : MonoBehaviour
         grounded = Physics2D.OverlapCapsule(groundCheck.position, new Vector2(1.61f,0.2f), CapsuleDirection2D.Horizontal,0 ,groundLayer);
         canJump = grounded? grounded: grounded;
         canDobleJump = grounded? grounded: canDobleJump;
+        canGo = grounded? grounded: canGo;
         plyAnimator.grounded = grounded;
 
     }
@@ -169,6 +170,7 @@ public class CharacterMovement : MonoBehaviour
                 
                 if(inGrace){
                     Destroy(SelectionMark);
+                    selectionGrace = 0;
                 }else{
                     GraceTimer();
                 }
@@ -187,6 +189,7 @@ public class CharacterMovement : MonoBehaviour
                 Destroy(SelectionMark);
                 SelectionMark = Instantiate(SelectionMarkPrefab, targets[0].transform);
                 target = targets[0];
+                selectionGrace = 0;
             }
             
     }
@@ -222,7 +225,6 @@ public class CharacterMovement : MonoBehaviour
             selectionGrace += Time.deltaTime;
             inGrace = false;
         }else{
-            selectionGrace = 0;
             inGrace = true;
         }
 

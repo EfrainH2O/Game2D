@@ -15,13 +15,11 @@ public class Player : MonoBehaviour
 
     //Components
     private Rigidbody2D rb2d;
-    private Transform transform;
     private PlayerAnimatorController plyAnimController;
     // Start is called before the first frame update
     void Awake()
     {
         rb2d = GetComponent<Rigidbody2D>();
-        transform = GetComponent<Transform>();
         plyAnimController = GetComponent<PlayerAnimatorController>();
     }
     void Start(){
