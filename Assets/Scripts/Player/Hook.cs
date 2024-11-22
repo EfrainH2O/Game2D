@@ -39,7 +39,7 @@ public class Hook : MonoBehaviour
                     if(target.tag == "Pivot"){
                         StartSwing(target);
                     }else if(target.tag == "Impulse"){
-                        //Impulse
+                        StartImpulse();
                     }   
                 }
                 traversing = false;
@@ -47,8 +47,8 @@ public class Hook : MonoBehaviour
         }
         
         if(lr.positionCount == 2){
-            lr.SetPosition(0, transform.position);
-            lr.SetPosition(1, tempHookPos);
+            lr.SetPosition(1, transform.position);
+            lr.SetPosition(0, tempHookPos);
         }
 
     }
@@ -57,8 +57,8 @@ public class Hook : MonoBehaviour
         tempHookPos = transform.position;
         if(target != null){  
             lr.positionCount = 2;
-            lr.SetPosition(0, transform.position);
-            lr.SetPosition(1, tempHookPos);
+            lr.SetPosition(1, transform.position);
+            lr.SetPosition(0, tempHookPos);
             this.target = target;
             traversing = true;
             
@@ -106,6 +106,10 @@ public class Hook : MonoBehaviour
         rb2d.AddForce(input * 10f * transform.right,ForceMode2D.Force);
     }
 
-
+    public void StartImpulse(){
+        rb2d.AddForce( 40f * (target.transform.position - transform.position).normalized, ForceMode2D.Impulse);
+        traversing = true;
+        target = gameObject.GetComponent<Collider2D>();
+    }
 
 }
