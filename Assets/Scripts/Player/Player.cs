@@ -7,6 +7,7 @@ public class Player : MonoBehaviour
 {
 
     private Vector3 spawnpoint;
+    private int level;
     private Vector2 forceDirection;
     private bool hited;
     private float gravity;
@@ -25,6 +26,7 @@ public class Player : MonoBehaviour
     void Start(){
         gravity = rb2d.gravityScale;
         spawnpoint = transform.position;
+        level = 0;
     }
     public void Hit(Vector2 direction){
         if(!hited){
@@ -42,7 +44,16 @@ public class Player : MonoBehaviour
     public Vector3 GetSpawnpt(){
         return spawnpoint;
     }
+    public void SetSpawnpt(Vector3 spwn){
+        spawnpoint = spwn;
+    }
+    public void SetLevel(int Next){
+        level = Next;
+    }
 
+    public int GetLevel(){
+        return level;
+    }
     public void SetHited(){
         hited = false;
         plyAnimController.Hit = hited;
