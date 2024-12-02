@@ -68,7 +68,6 @@ public class Hook : MonoBehaviour
     public void DestroyHook(){
         if(join2d != null){
             Destroy(join2d);
-            transform.eulerAngles = new Vector3(0,transform.rotation.eulerAngles.y,0);
             rb2d.freezeRotation = true;
         }
         traversing = true;

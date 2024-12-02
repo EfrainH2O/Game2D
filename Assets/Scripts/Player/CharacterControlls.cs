@@ -17,7 +17,7 @@ public class CharacterControlls : MonoBehaviour
     private float xMov, yMov;
     private bool yStart, yEnd, powerInput, powerOutput, planePow, lockTarget;
     [SerializeField]
-    private int state;
+    private int state, prevState;
     private bool rFace;
     
     private void Awake() {
@@ -33,6 +33,7 @@ public class CharacterControlls : MonoBehaviour
     {
         rFace = true;
         state = 0;
+        prevState = state;
     }
 
     // Update is called once per frame
@@ -60,7 +61,7 @@ public class CharacterControlls : MonoBehaviour
                         lockTarget = Input.GetKey(KeyCode.LeftControl);
 
             //Actions depending on the state
-            chMov.LockTarget(lockTarget);
+            
                 if(state == 0){
                     chMov.HorizontalMov(xMov);
                     chMov.VerticalMov(yStart, yEnd);
@@ -80,13 +81,12 @@ public class CharacterControlls : MonoBehaviour
                 }
 
 
-                if(powerInput){
-                    ChangeState(2);
+                if(powerInput){         //
+                    ChangeState(2);     //
                 }else if(powerOutput){  //Hook
-                    ChangeState(0);
+                    ChangeState(prevState);
                 }
-                   
-                else if(planePow){
+                if(planePow){
                     ChangeStateButton(); // plane
                 }
 
@@ -98,6 +98,7 @@ public class CharacterControlls : MonoBehaviour
         if(state == 1){
             chMov.Momentum();
         }
+        chMov.LockTarget(lockTarget);
     }
 
     private void animateXDir(float mov){
@@ -159,7 +160,7 @@ public class CharacterControlls : MonoBehaviour
     private void SetGroundState(){
             plyAnimator.flying = false;
             if(sp.flipX == true){
-                transform.eulerAngles = new Vector3(0f,-180f,transform.eulerAngles.z);
+                transform.eulerAngles = new Vector3(0f,-180f,0);
                 sp.flipX = false;
             }
             transform.eulerAngles = new Vector3(0,transform.rotation.eulerAngles.y,0);
@@ -170,10 +171,11 @@ public class CharacterControlls : MonoBehaviour
             hook.DestroyHook();
             rb2d.freezeRotation = true;
             state = 0;
-            chMov.Grounded();
+            prevState = state == 2? prevState : state;
     }
 
     private void SetBalanceState(){
+        prevState = state == 2? prevState : state;
         transform.eulerAngles = new Vector3(0,0,0);
         if(!rFace){
             sp.flipX = true;
@@ -185,7 +187,12 @@ public class CharacterControlls : MonoBehaviour
 
     private void SetFlyState(){
         if(!chMov.getGround()){
+            hook.DestroyHook();
             plyAnimator.flying = true;
+            if(sp.flipX == true){
+                transform.eulerAngles = new Vector3(0f,180f, transform.eulerAngles.z+180);
+                sp.flipX = false;
+            }
             rb2d.freezeRotation = false;
             state = 1;
         }
@@ -194,9 +201,7 @@ public class CharacterControlls : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D other) {
         var layerMask = other.gameObject.layer;
         if ( layerMask == 3 || layerMask == 8 ){
-            if(state == 1){
-                ChangeState(0);
-            }else if(state == 2 && other.relativeVelocity.magnitude > 20){
+            if(state == 1 || (state == 2 && other.relativeVelocity.magnitude > 0)){
                 ChangeState(0);
             }
         }

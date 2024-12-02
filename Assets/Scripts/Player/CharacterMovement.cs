@@ -27,7 +27,7 @@ public class CharacterMovement : MonoBehaviour
     [SerializeField]
     private ContactFilter2D focus;
     [SerializeField]
-    private float speed, jumpForce, friction, jumpAfterForce, rotationalSpeed, mult;
+    private float speed, jumpForce, friction, jumpAfterForce, rotationalSpeed, mult, effectArea;
     private Vector3 velocity = Vector3.zero;
     private Collider2D target;
     private Vector2 gravity;
@@ -139,11 +139,12 @@ public class CharacterMovement : MonoBehaviour
     public void Impulse(bool go){
         if(go && canGo){
             rb2d.AddForce(jumpForce*transform.right*5, ForceMode2D.Impulse);
+            canGo = false;
         }
     }
     
     public void Grounded(){
-        grounded = Physics2D.OverlapCapsule(groundCheck.position, new Vector2(1.61f,0.2f), CapsuleDirection2D.Horizontal,0 ,groundLayer);
+        grounded = Physics2D.OverlapCapsule(groundCheck.position, new Vector2(1.8f,0.4f), CapsuleDirection2D.Horizontal,0 ,groundLayer);
         canJump = grounded? grounded: grounded;
         canDobleJump = grounded? grounded: canDobleJump;
         canGo = grounded? grounded: canGo;
@@ -158,7 +159,11 @@ public class CharacterMovement : MonoBehaviour
         
         if(Button){
             GraceTimer();
-            targetAmount = Physics2D.OverlapCircle(transform.position, 8f, focus, targets );
+            target = null;
+            for(int i = 0; i < 5; i++){
+                targets[i] = null;
+            }
+            targetAmount = Physics2D.OverlapCircle(transform.position, effectArea, focus, targets );
             if(targetAmount != 0){
                 quickSort(0,targetAmount-1);
             }
@@ -180,6 +185,7 @@ public class CharacterMovement : MonoBehaviour
     }
 
     private void ChangeSelectionMark(){
+        if(targets[0] != null){
             if(SelectionMark == null){
                 SelectionMark = Instantiate(SelectionMarkPrefab, targets[0].transform);
                 target = targets[0];
@@ -191,6 +197,8 @@ public class CharacterMovement : MonoBehaviour
                 target = targets[0];
                 selectionGrace = 0;
             }
+        }
+            
             
     }
 
