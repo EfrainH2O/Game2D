@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine.InputSystem;
 using UnityEngine;
+using UnityEditor.Rendering;
 
 public class CharacterControlls : MonoBehaviour
 {
@@ -83,7 +84,8 @@ public class CharacterControlls : MonoBehaviour
 
                 if(powerInput){         //
                     ChangeState(2);     //
-                }else if(powerOutput){  //Hook
+
+                }else if(state == 2 &&(powerOutput|| chMov.getTarget() == null)){  //Hook
                     ChangeState(prevState);
                 }
                 if(planePow){
@@ -176,13 +178,16 @@ public class CharacterControlls : MonoBehaviour
 
     private void SetBalanceState(){
         prevState = state == 2? prevState : state;
-        transform.eulerAngles = new Vector3(0,0,0);
-        if(!rFace){
-            sp.flipX = true;
+        Collider2D temp = chMov.getTarget();
+        if(temp != null){
+            transform.eulerAngles = new Vector3(0,0,0);
+            if(!rFace){
+                sp.flipX = true;
+            }
+            hook.CreateHook(temp);
         }
-        chMov.LockTarget(true);
-        hook.CreateHook(chMov.getTarget());
         state = 2;
+       
     }
 
     private void SetFlyState(){
@@ -190,19 +195,23 @@ public class CharacterControlls : MonoBehaviour
             hook.DestroyHook();
             plyAnimator.flying = true;
             if(sp.flipX == true){
-                transform.eulerAngles = new Vector3(0f,180f, transform.eulerAngles.z+180);
+                transform.eulerAngles = new Vector3(0f,180f, 360f-transform.eulerAngles.z);
                 sp.flipX = false;
             }
             rb2d.freezeRotation = false;
             state = 1;
+        }else{
+            SetGroundState();
         }
     }
 
     private void OnCollisionEnter2D(Collision2D other) {
         var layerMask = other.gameObject.layer;
         if ( layerMask == 3 || layerMask == 8 ){
-            if(state == 1 || (state == 2 && other.relativeVelocity.magnitude > 0)){
+            if(state == 1 || (state == 2 && other.relativeVelocity.magnitude > 20)){
                 ChangeState(0);
+                Debug.Log(state);
+                Debug.Log(other.relativeVelocity.magnitude);
             }
         }
         

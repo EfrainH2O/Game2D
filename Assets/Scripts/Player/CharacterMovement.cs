@@ -144,7 +144,7 @@ public class CharacterMovement : MonoBehaviour
     }
     
     public void Grounded(){
-        grounded = Physics2D.OverlapCapsule(groundCheck.position, new Vector2(1.8f,0.4f), CapsuleDirection2D.Horizontal,0 ,groundLayer);
+        grounded = Physics2D.OverlapCapsule(groundCheck.position, new Vector2(1.3f,0.4f), CapsuleDirection2D.Horizontal,transform.rotation.eulerAngles.z,groundLayer);
         canJump = grounded? grounded: grounded;
         canDobleJump = grounded? grounded: canDobleJump;
         canGo = grounded? grounded: canGo;
@@ -159,7 +159,6 @@ public class CharacterMovement : MonoBehaviour
         
         if(Button){
             GraceTimer();
-            target = null;
             for(int i = 0; i < 5; i++){
                 targets[i] = null;
             }
@@ -197,6 +196,8 @@ public class CharacterMovement : MonoBehaviour
                 target = targets[0];
                 selectionGrace = 0;
             }
+        }else{
+            target = null;
         }
             
             
@@ -243,6 +244,7 @@ public class CharacterMovement : MonoBehaviour
     }
 
     public Collider2D getTarget(){
+        LockTarget(true);
         return target;
     }
     
