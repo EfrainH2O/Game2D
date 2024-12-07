@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Player
   m_EditorClassIdentifier: 
   CharacterName: Player
-  animator: {fileID: 9100000, guid: 720e637223841844c951840af3b39fb2, type: 2}
+  animator: {fileID: 9100000, guid: 457a359e61d4fd742b17ba43c50e2d29, type: 2}
   image: {fileID: 781615245368611544, guid: 5fd9f3ec1e3e0bc4d8e308e10012a36a, type: 3}

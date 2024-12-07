@@ -57,7 +57,7 @@ public class CharacterControlls : MonoBehaviour
                         yStart = Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.JoystickButton0);
                         yEnd = Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.JoystickButton0);
                         powerInput = Input.GetButtonDown("Power") ;
-                        powerOutput = Input.GetButtonUp("Power");
+                        powerOutput = Input.GetButtonUp("Power") || !Input.GetButton("Power");
                         planePow = Input.GetKeyDown(KeyCode.E);
                         lockTarget = Input.GetKey(KeyCode.LeftControl);
 

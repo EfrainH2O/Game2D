@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
-
+    public static Player Instance;
     private Vector3 spawnpoint;
     private int level;
     private Vector2 forceDirection;
@@ -17,9 +17,14 @@ public class Player : MonoBehaviour
     //Components
     private Rigidbody2D rb2d;
     private PlayerAnimatorController plyAnimController;
+
+    private RigidbodyConstraints2D before;
     // Start is called before the first frame update
     void Awake()
     {
+        if (Instance == null)
+            Instance = this;
+
         rb2d = GetComponent<Rigidbody2D>();
         plyAnimController = GetComponent<PlayerAnimatorController>();
     }
@@ -60,5 +65,16 @@ public class Player : MonoBehaviour
     }
     public void ReturnGravity(){
         rb2d.gravityScale = gravity;
+    }
+
+    public void Freeze(){
+        GetComponent<CharacterControlls>().enabled = false;
+        before = rb2d.constraints;
+        rb2d.constraints = RigidbodyConstraints2D.FreezePosition | RigidbodyConstraints2D.FreezeRotation;
+    }
+
+    public void UnFreeze(){
+        GetComponent<CharacterControlls>().enabled = true;
+        rb2d.constraints = before;
     }
 }
