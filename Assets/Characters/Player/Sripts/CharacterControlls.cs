@@ -214,5 +214,7 @@ public class CharacterControlls : MonoBehaviour
         }
         
     }
-
+    public void OnDisable(){
+        plyAnimator.walking = false;
+    }
 }

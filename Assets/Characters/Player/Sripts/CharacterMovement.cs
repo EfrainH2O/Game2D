@@ -26,8 +26,6 @@ public class CharacterMovement : MonoBehaviour
     //Constants
     [SerializeField]
     private ContactFilter2D focus;
-    [SerializeField]
-    private float speed, jumpForce, friction, jumpAfterForce, rotationalSpeed, mult, effectArea;
     private Vector3 velocity = Vector3.zero;
     private Collider2D target;
     private Vector2 gravity;
@@ -36,7 +34,18 @@ public class CharacterMovement : MonoBehaviour
     private LayerMask groundLayer;
     [SerializeField]
     private GameObject SelectionMarkPrefab;
-    //Components
+    [Header("Sonidos")]
+    [SerializeField]
+    private AudioClip jumpSound;
+    [SerializeField]
+    private float Jvol;
+
+    [Header("VarExtra")]
+    [SerializeField]
+    private float speed;
+    [SerializeField]
+    private float  jumpForce, friction, jumpAfterForce, rotationalSpeed, mult, effectArea;
+     //Components
     private Rigidbody2D rb2d;
     private PlayerAnimatorController plyAnimator;
 
@@ -53,6 +62,11 @@ public class CharacterMovement : MonoBehaviour
         groundLayer = LayerMask.GetMask("Ground");
         gravity = new Vector2(0, Physics.gravity.y);
     }
+
+    private void Update(){
+        plyAnimator.grounded = grounded;
+    }
+
 
     public void HorizontalMov(float input){
         
@@ -90,14 +104,17 @@ public class CharacterMovement : MonoBehaviour
         }
         
         if(canJump && input){
+            
             rb2d.velocity = new Vector2(rb2d.velocity.x, jumpForce);
+            SFXManager.instance.PlaySFX(jumpSound, transform.position, Jvol);
             grounded = false;
             canJump = false;
             isJumping = true;
-            plyAnimator.grounded = false;
+            
         }
         else if(canDobleJump && input){
             rb2d.velocity = new Vector2(rb2d.velocity.x, jumpForce);
+            SFXManager.instance.PlaySFX(jumpSound, transform.position, Jvol);
             canDobleJump = false;
             isJumping = true;
             plyAnimator.dobleJump = true;
@@ -144,11 +161,11 @@ public class CharacterMovement : MonoBehaviour
     }
     
     public void Grounded(){
-        grounded = Physics2D.OverlapCapsule(groundCheck.position, new Vector2(1.3f,0.4f), CapsuleDirection2D.Horizontal,transform.rotation.eulerAngles.z,groundLayer);
+        grounded = Physics2D.OverlapCapsule(groundCheck.position, new Vector2(1.6f,0.4f), CapsuleDirection2D.Horizontal,transform.rotation.eulerAngles.z,groundLayer);
         canJump = grounded? grounded: grounded;
         canDobleJump = grounded? grounded: canDobleJump;
         canGo = grounded? grounded: canGo;
-        plyAnimator.grounded = grounded;
+        
 
     }
     private void OnCollisionEnter2D(Collision2D other) {
