@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
 
 public class ScenaryMovement : MonoBehaviour
@@ -18,4 +17,5 @@ public class ScenaryMovement : MonoBehaviour
     {
         material.mainTextureOffset += new Vector2(velocity * Time.deltaTime, 0);
     }
+
 }

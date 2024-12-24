@@ -26,10 +26,10 @@ public class SFXManager : MonoBehaviour
         temp.clip = clip;
         temp.volume = volum;
         temp.Play();
-        Destroy(temp, clip.length);
+        Destroy(temp.gameObject, clip.length);
     }
 
-    public void StartPlayingSFX(AudioClip clip, Vector2 pos, float volum){
+    public AudioSource StartPlayingSFX(AudioClip clip, Vector2 pos, float volum){
         AudioSource temp = Instantiate(prefab, pos, Quaternion.identity);
         temp.clip = clip;
         temp.volume = volum;
@@ -38,9 +38,11 @@ public class SFXManager : MonoBehaviour
             active.Add(clip,temp);
         }catch(ArgumentException){
             Debug.LogWarning("The Sound is alredy Playing");
-            return;
+            Destroy(temp.gameObject);
+            return temp;
         }
         temp.Play();
+        return temp;
     }
 
     public void EndPlaySFX(AudioClip clip){
@@ -51,11 +53,9 @@ public class SFXManager : MonoBehaviour
             Debug.LogWarning("The Sound is not being played");
             return;
         }
-        Destroy(temp);
+        Destroy(temp.gameObject);
         active.Remove(clip);
-        
     }
-
-    // Update is called once per frame
+    
     
 }

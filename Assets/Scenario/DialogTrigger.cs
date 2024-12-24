@@ -16,6 +16,7 @@ public class DialogueTrigger : MonoBehaviour
         if(collision.tag == "Player")
         {
             TriggerDialogue();
+            GetComponent<Collider2D>().enabled = false;
         }
     }
     public void Update(){

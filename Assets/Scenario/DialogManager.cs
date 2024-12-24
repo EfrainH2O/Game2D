@@ -21,6 +21,8 @@ public class DialogueManager : MonoBehaviour
  
     private Animator animator;
     private DialogueLine currentLine;
+    [SerializeField]
+    private AudioClip checkSound;
  
     private void Awake()
     {
@@ -49,7 +51,7 @@ public class DialogueManager : MonoBehaviour
 
     public void DisplayNextDialogueLine()
     {
-
+        SFXManager.instance.PlaySFX(checkSound, Vector3.zero, 1f);
         if(!isDialougeFinished){
             StopAllCoroutines();
             dialogueArea.GetComponent<TextMeshProUGUI>().text = currentLine.line;

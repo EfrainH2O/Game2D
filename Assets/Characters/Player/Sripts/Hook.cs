@@ -19,6 +19,8 @@ public class Hook : MonoBehaviour
     private Vector3 tempHookPos;
     [SerializeField]
     private float ropeSpeed;
+    [SerializeField]
+    private AudioClip HangingSound;
     private bool traversing;
     private void Awake() {
         lr = GetComponent<LineRenderer>();
@@ -36,6 +38,7 @@ public class Hook : MonoBehaviour
                     lr.positionCount = 0;
                     target = null;
                 }else{
+
                     if(target.tag == "Pivot"){
                         StartSwing(target);
                     }else if(target.tag == "Impulse"){
@@ -60,6 +63,7 @@ public class Hook : MonoBehaviour
             lr.SetPosition(1, transform.position);
             lr.SetPosition(0, tempHookPos);
             this.target = target;
+            SFXManager.instance.PlaySFX(HangingSound, transform.position,1f);
             traversing = true;
             
         } 

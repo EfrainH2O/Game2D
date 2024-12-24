@@ -137,10 +137,10 @@ public class CharacterMovement : MonoBehaviour
     }
     public void Momentum(){
         velMagntitude = Vector3.Cross(rb2d.velocity, transform.right).z*mult;
-        if (velMagntitude>30){
-            velMagntitude = 30f;
-        }else if(velMagntitude < -30f){
-            velMagntitude = -30f;
+        if (velMagntitude>50){
+            velMagntitude = 50f;
+        }else if(velMagntitude < -50f){
+            velMagntitude = -50f;
         }
         //Angulo actual que movemos a radianes para la funcion de Sin y Cos
         
