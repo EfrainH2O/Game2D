@@ -11,29 +11,14 @@ public class CharacterMovement : MonoBehaviour
     //Variables
     private bool grounded, canDobleJump, canJump, isJumping, canGo;
     private float proportional, jumpCount, desRotation,  velMagntitude ;
-    private float selectionGrace = 0;
-    public bool inGrace;
-    [SerializeField]
-    private float MAXselectionGrace;
+
     private Quaternion actualPos, desPos;
-    private int targetAmount;
-    private GameObject SelectionMark;
-    private Collider2D[] targets = new Collider2D[5];
-    private Collider2D temp;
-    float pivoteDistance;
-    float targetDistance;
-    [Header("Filtro para Targets")]
-    //Constants
-    [SerializeField]
-    private ContactFilter2D focus;
     private Vector3 velocity = Vector3.zero;
-    private Collider2D target;
     private Vector2 gravity;
     private float MAX_TIME = 0.3f; 
     private Transform groundCheck;
     private LayerMask groundLayer;
-    [SerializeField]
-    private GameObject SelectionMarkPrefab;
+    
     [Header("Sonidos")]
     [SerializeField]
     private AudioClip jumpSound;
@@ -44,7 +29,7 @@ public class CharacterMovement : MonoBehaviour
     [SerializeField]
     private float speed;
     [SerializeField]
-    private float  jumpForce, friction, jumpAfterForce, rotationalSpeed, mult, effectArea;
+    private float  jumpForce, friction, jumpAfterForce, rotationalSpeed, mult;
      //Components
     private Rigidbody2D rb2d;
     private PlayerAnimatorController plyAnimator;
@@ -172,97 +157,9 @@ public class CharacterMovement : MonoBehaviour
         Grounded();
     }
 
-    public void LockTarget(bool Button){
-        
-        if(Button){
-            GraceTimer();
-            for(int i = 0; i < 5; i++){
-                targets[i] = null;
-            }
-            targetAmount = Physics2D.OverlapCircle(transform.position, effectArea, focus, targets );
-            if(targetAmount != 0){
-                quickSort(0,targetAmount-1);
-            }
-            ChangeSelectionMark();
-        }
-        else{
-            
-            if(SelectionMark != null ){
-                
-                if(inGrace){
-                    Destroy(SelectionMark);
-                    selectionGrace = 0;
-                }else{
-                    GraceTimer();
-                }
-                
-            }
-        }
-    }
-
-    private void ChangeSelectionMark(){
-        if(targets[0] != null){
-            if(SelectionMark == null){
-                SelectionMark = Instantiate(SelectionMarkPrefab, targets[0].transform);
-                target = targets[0];
-            }
-            
-            else if(SelectionMark !=  null && targets[0].transform !=SelectionMark.transform && inGrace){
-                Destroy(SelectionMark);
-                SelectionMark = Instantiate(SelectionMarkPrefab, targets[0].transform);
-                target = targets[0];
-                selectionGrace = 0;
-            }
-        }else{
-            target = null;
-        }
-            
-            
-    }
-
-    private void quickSort(int low, int n){
-
-        int j =  low-1;
-        if (n <= low){
-            return;
-        }
-        pivoteDistance = (transform.position - targets[n].GetComponent<Transform>().position).magnitude;
-        for (int i = low; i <= n; i++){
-            targetDistance = (transform.position - targets[i].GetComponent<Transform>().position).magnitude;
-
-            if(targetDistance <= pivoteDistance){
-                j++;
-                if(i>j){
-                    temp = targets[i];
-                    targets[i] = targets[j];
-                    targets[j] = temp;
-                }
-            }
-        }
-
-        quickSort(low,j-1);
-        quickSort(j+1,n);
-        return;
-        
-    }
-
-    private void GraceTimer(){
-        if(selectionGrace < MAXselectionGrace){
-            selectionGrace += Time.deltaTime;
-            inGrace = false;
-        }else{
-            inGrace = true;
-        }
-
-    }
 
     public bool getGround(){
         return grounded;
-    }
-
-    public Collider2D getTarget(){
-        LockTarget(true);
-        return target;
     }
     
 }

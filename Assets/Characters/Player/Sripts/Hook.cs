@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Unity.Android.Types;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -12,17 +14,38 @@ public class Hook : MonoBehaviour
     private LineRenderer lr;
     private HingeJoint2D join2d;
     private Rigidbody2D rb2d;
-    private Collider2D target;
-
-    private float angulePosition;
-    private Vector2 distance;
+    //temp values
+    private float pivoteDistance, targetDistance, angulePosition;
+    private Collider2D temp;
     private Vector3 tempHookPos;
+    // control variables
+    private Collider2D target;
+    private Collider2D tempTarget;
+    private bool isConnected;
+    private int targetAmount;
+    private float selectionGrace;
+    private Vector2 distance;
+    private bool inGrace;
+    private bool traversing;
+    private Collider2D[] targets = new Collider2D[5];
+    private GameObject SelectionMark;
+    // Serialize Values
     [SerializeField]
     private float ropeSpeed;
     [SerializeField]
+    private float effectArea;
+    [SerializeField]
     private AudioClip HangingSound;
-    private bool traversing;
+    [SerializeField]
+    private float MAXselectionGrace;
+    [SerializeField]
+    private GameObject SelectionMarkPrefab;
+    [Header("Filtro para Targets")]
+    //Constants
+    [SerializeField]
+    private ContactFilter2D focus;
     private void Awake() {
+        selectionGrace = 0;
         lr = GetComponent<LineRenderer>();
         rb2d = GetComponent<Rigidbody2D>();
         tempHookPos = transform.position;
@@ -31,21 +54,23 @@ public class Hook : MonoBehaviour
 
     }
     private void Update() {
-        if(target != null){
+        
+        if(traversing){
+            //TODO
             tempHookPos = Vector3.MoveTowards(tempHookPos, target.transform.position, ropeSpeed * Time.deltaTime);
-            if(traversing && tempHookPos == target.transform.position){
+            if(tempHookPos == target.transform.position){
+                traversing = false;
                 if(target.transform == transform){
                     lr.positionCount = 0;
-                    target = null;
+                    targetAmount = 0;
                 }else{
-
+                    SFXManager.instance.PlaySFX(HangingSound, transform.position,1f);
                     if(target.tag == "Pivot"){
-                        StartSwing(target);
+                        StartSwing();
                     }else if(target.tag == "Impulse"){
                         StartImpulse();
                     }   
                 }
-                traversing = false;
             }
         }
         
@@ -56,18 +81,13 @@ public class Hook : MonoBehaviour
 
     }
 
-    public void CreateHook(Collider2D target){
+    public void StartHook(){
         tempHookPos = transform.position;
-        if(target != null){  
+        target = tempTarget;
+        if(targetAmount > 0 ){  
             lr.positionCount = 2;
-            lr.SetPosition(1, transform.position);
-            lr.SetPosition(0, tempHookPos);
-            this.target = target;
-            SFXManager.instance.PlaySFX(HangingSound, transform.position,1f);
             traversing = true;
-            
         } 
-            //Action Of Hook depending on layer
     }
     public void DestroyHook(){
         if(join2d != null){
@@ -76,9 +96,98 @@ public class Hook : MonoBehaviour
         }
         traversing = true;
         target = gameObject.GetComponent<Collider2D>();
+        isConnected = false;
+    }
+    
+    bool tempprev = false;
+    public void LockTarget(bool Button){
+        if(Button && !tempprev){
+            inGrace = true;
+            selectionGrace = MAXselectionGrace + 1;
+        }
+        if(Button){
+            GraceTimer();
+            targetAmount = Physics2D.OverlapCircle(transform.position, effectArea, focus, targets );
+            if(targetAmount > 0){
+                quickSort(0,targetAmount-1);
+            }         
+            ChangeSelectionMark();
+        }
+        else{
+            if(SelectionMark != null ){
+                if(inGrace){
+                    Destroy(SelectionMark);
+                    selectionGrace = 0;
+                    inGrace = false;
+                }else{
+                    GraceTimer();
+                }
+            }
+        }
+        tempprev = Button;
+    }
+    private void ChangeSelectionMark(){
+        if(inGrace){
+            if(targetAmount > 0){
+                tempTarget = targets[0];
+                if(SelectionMark == null ){
+                    SelectionMark = Instantiate(SelectionMarkPrefab, tempTarget.transform);
+                }
+                else if(tempTarget.transform !=SelectionMark.transform ){
+                    SelectionMark.transform.position = tempTarget.transform.position;
+                }else{
+                    return;
+                }
+            }else{
+                if(SelectionMark != null ){
+                    Destroy(SelectionMark);
+                }else{
+                    return;
+                }
+            }
+            selectionGrace = 0;
+            inGrace = false;
+        }
+            
     }
 
-    private void StartSwing(Collider2D target){
+    private void quickSort(int low, int n){
+
+        int j =  low-1;
+        if (n <= low){
+            return;
+        }
+        pivoteDistance = (transform.position - targets[n].GetComponent<Transform>().position).magnitude;
+        for (int i = low; i <= n; i++){
+            targetDistance = (transform.position - targets[i].GetComponent<Transform>().position).magnitude;
+            if(targetDistance <= pivoteDistance){
+                j++;
+                if(i>j){
+                    temp = targets[i];
+                    targets[i] = targets[j];
+                    targets[j] = temp;
+                }
+            }
+        }
+
+        quickSort(low,j-1);
+        quickSort(j+1,n);
+        return;
+        
+    }
+
+    private void GraceTimer(){
+        if(selectionGrace < MAXselectionGrace){
+            selectionGrace += Time.deltaTime;
+            inGrace = false;
+        }else{
+            inGrace = true;
+        }
+
+    }
+
+    private void StartSwing(){
+        isConnected = true;
         distance = transform.position-target.transform.position;
         //Debug.Log(transform.position+ " - "+ target.transform.position);
         
@@ -111,8 +220,15 @@ public class Hook : MonoBehaviour
         rb2d.velocity = Vector2.zero;
         Vector3 direction = target.transform.position - transform.position;
         rb2d.AddForce( 40f*direction.normalized  , ForceMode2D.Impulse);
-        traversing = true;
-        target = gameObject.GetComponent<Collider2D>();
+        DestroyHook();
+
+    }
+
+    public bool GetisConnected(){
+        return isConnected;
+    }
+    public int getTargetAmount(){
+        return targetAmount;
     }
 
 }

@@ -4,7 +4,12 @@ using Unity.VisualScripting;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using UnityEditor.Rendering;
-
+using System.Runtime.CompilerServices;
+public enum States{
+    Normal,
+    Fly,
+    Chained
+}
 public class CharacterControlls : MonoBehaviour
 {
     // Components
@@ -14,11 +19,12 @@ public class CharacterControlls : MonoBehaviour
     private Hook hook;
     private Rigidbody2D rb2d;
     private SpriteRenderer sp;
+    private LineRenderer lr;
     // Variables
     private float xMov, yMov;
     private bool yStart, yEnd, powerInput, powerOutput, planePow, lockTarget;
     [SerializeField]
-    private int state, prevState;
+    private States state, prevState;
     private bool rFace;
     
     private void Awake() {
@@ -27,13 +33,14 @@ public class CharacterControlls : MonoBehaviour
         plyAnimator = GetComponent<PlayerAnimatorController>();
         hook = GetComponent<Hook>();
         sp = GetComponent<SpriteRenderer>();
+        lr = GetComponent<LineRenderer>();
         rb2d = GetComponent<Rigidbody2D>();
 
     }
     void Start()
     {
         rFace = true;
-        state = 0;
+        state = States.Normal;
         prevState = state;
     }
 
@@ -46,7 +53,7 @@ public class CharacterControlls : MonoBehaviour
         {
             chMov.HorizontalMov(0);
             chMov.VerticalMov(false, false);
-            chMov.LockTarget(false);
+            hook.LockTarget(false);
     
         }
         else
@@ -63,31 +70,41 @@ public class CharacterControlls : MonoBehaviour
 
             //Actions depending on the state
             
-                if(state == 0){
+                if(state == States.Normal){
                     chMov.HorizontalMov(xMov);
                     chMov.VerticalMov(yStart, yEnd);
                     animateXDir(xMov);
                     //Normal movement
                     
                 }
-                else if (state == 1){
+                else if (state == States.Fly){
                     chMov.RotatedMov(xMov, yMov);
                     chMov.Impulse(yStart);
                     //Movement in plane
                 }
-                else if(state == 2){
+                else if(state == States.Chained && hook.GetisConnected()){
                     hook.MovementInHook(xMov);
                     animateXBalance(xMov);
                     //Movement in rope
                 }
 
+//TODO
+                if(powerInput){
+                    hook.LockTarget(true);
+                    hook.StartHook();
+                }else if(powerOutput && lr.positionCount > 1){
+                    hook.DestroyHook();
+                }
 
-                if(powerInput){         //
-                    ChangeState(2);     //
 
-                }else if(state == 2 &&(powerOutput|| chMov.getTarget() == null)){  //Hook
+                if(state != States.Chained && hook.GetisConnected()){      
+                    ChangeState(States.Chained);   
+
+                }
+                else if(state == States.Chained  &&! hook.GetisConnected()){  //Hook
                     ChangeState(prevState);
                 }
+
                 if(planePow){
                     ChangeStateButton(); // plane
                 }
@@ -97,10 +114,11 @@ public class CharacterControlls : MonoBehaviour
 
     }
     private void FixedUpdate() {
-        if(state == 1){
+        if(state == States.Fly ){
             chMov.Momentum();
         }
-        chMov.LockTarget(lockTarget);
+        hook.LockTarget(lockTarget);
+        
     }
 
     private void animateXDir(float mov){
@@ -137,20 +155,21 @@ public class CharacterControlls : MonoBehaviour
         }
     }
 
-    public void ChangeState(int desState){
-        if(desState == 1){
+    public void ChangeState(States desState){
+        prevState = state;
+        if(desState == States.Fly){
             SetFlyState();
             
-        }else if(desState == 0){
+        }else if(desState == States.Normal){
             SetGroundState();
         }
-        else if(desState == 2){
+        else if(desState == States.Chained){
             SetBalanceState();
         }
     }
 
     private void ChangeStateButton(){
-        if(state == 1){
+        if(state == States.Fly){
             SetGroundState();
         }
         else{
@@ -172,21 +191,15 @@ public class CharacterControlls : MonoBehaviour
             }
             hook.DestroyHook();
             rb2d.freezeRotation = true;
-            state = 0;
-            prevState = state == 2? prevState : state;
+            state = States.Normal;
     }
 
     private void SetBalanceState(){
-        prevState = state == 2? prevState : state;
-        Collider2D temp = chMov.getTarget();
-        if(temp != null){
-            transform.eulerAngles = new Vector3(0,0,0);
-            if(!rFace){
-                sp.flipX = true;
-            }
-            hook.CreateHook(temp);
+        if(!rFace){
+            transform.eulerAngles = new Vector3(transform.eulerAngles.x, 0, transform.eulerAngles.z);
+            sp.flipX = true;
         }
-        state = 2;
+        state = States.Chained;
        
     }
 
@@ -199,7 +212,7 @@ public class CharacterControlls : MonoBehaviour
                 sp.flipX = false;
             }
             rb2d.freezeRotation = false;
-            state = 1;
+            state = States.Fly;
         }else{
             SetGroundState();
         }
@@ -208,8 +221,8 @@ public class CharacterControlls : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D other) {
         var layerMask = other.gameObject.layer;
         if ( layerMask == 3 || layerMask == 8 ){
-            if(state == 1 || (state == 2 && other.relativeVelocity.magnitude > 20)){
-                ChangeState(0);
+            if(state == States.Fly || (state == States.Chained && other.relativeVelocity.magnitude > 20)){
+                ChangeState(States.Normal);
             }
         }
         
