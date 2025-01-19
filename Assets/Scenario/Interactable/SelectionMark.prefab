@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1735091181141481521}
   - component: {fileID: 4354911245963093546}
+  - component: {fileID: 7168405853975113109}
+  - component: {fileID: -4472930569256805015}
   m_Layer: 6
   m_Name: SelectionMark
   m_TagString: Untagged
@@ -84,3 +86,36 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &7168405853975113109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5413012962498360041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a48b67b316acb04a9d83498abfd1adb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  characterIcon: {fileID: 0}
+  characterName: {fileID: 0}
+  dialogueArea: {fileID: 0}
+  isDialogueActive: 0
+  isDialougeFinished: 1
+  typingSpeed: 0
+  checkSound: {fileID: 0}
+--- !u!114 &-4472930569256805015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5413012962498360041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 073460c333a5fd94cb8724364b0b398a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dialogue:
+    dialogueLines: []

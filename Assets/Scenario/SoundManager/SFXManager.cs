@@ -29,6 +29,21 @@ public class SFXManager : MonoBehaviour
         Destroy(temp.gameObject, clip.length);
     }
 
+    public void PauseSFX(){
+        foreach(KeyValuePair<AudioClip, AudioSource> sound in active){
+            if(sound.Value.isPlaying){
+                sound.Value.Pause();
+            }
+        }
+    }
+    public void UnPauseSFX(){
+        foreach(KeyValuePair<AudioClip, AudioSource> sound in active){
+            if(!sound.Value.isPlaying){
+                sound.Value.UnPause();
+            }
+        }
+    }
+
     public AudioSource StartPlayingSFX(AudioClip clip, Vector2 pos, float volum){
         AudioSource temp = Instantiate(prefab, pos, Quaternion.identity);
         temp.clip = clip;
